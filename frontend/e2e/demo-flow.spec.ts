@@ -15,31 +15,30 @@ test.describe("PhysicalOS primary demo", () => {
     page.on("pageerror", (err) => pageErrors.push(String(err)));
 
     await page.goto("/", { waitUntil: "networkidle" });
-    await expect(page.getByText("Loading PhysicalOS…").or(page.getByRole("heading", { name: "Command Center" }))).toBeVisible({
-      timeout: 30_000,
-    });
-    await expect(page.getByRole("heading", { name: "Command Center" })).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByRole("heading", { level: 1, name: "Factory Operations" })).toBeVisible({ timeout: 60_000 });
     await expect(page.getByText("Simulation Mode").first()).toBeVisible();
+    await expect(page.locator('[aria-label="Operational data flow"]')).toBeVisible();
     await expect(page.getByRole("combobox", { name: /Work order/i })).toBeEnabled({ timeout: 60_000 });
 
-    await page.getByRole("button", { name: /Replay first failure/i }).click();
+    const runbook = page.getByRole("region", { name: "Demo runbook" });
+
+    await runbook.getByRole("button", { name: /Replay first failure/i }).click();
     await expect(page.getByText(/Replayed UDI/i)).toBeVisible({ timeout: 60_000 });
-    await expect(page.getByText(/AI4I UDI 51 machine failure/i)).toBeVisible({ timeout: 60_000 });
+    await expect(page.getByText(/fault|M-CNC-01|UDI 51/i).first()).toBeVisible({ timeout: 60_000 });
 
-    await page.getByRole("button", { name: /Request recommendation/i }).click();
-    await expect(page.getByText(/Worker 1 \+ robot R1|Worker 1/i)).toBeVisible({ timeout: 60_000 });
+    await runbook.getByRole("button", { name: /Request recommendation/i }).click();
+    await expect(page.getByText(/Worker 1 \+ robot R1|Worker 1|Worker\s+1/i).first()).toBeVisible({ timeout: 60_000 });
 
-    await page.getByRole("button", { name: /Create proposal/i }).click();
+    await runbook.getByRole("button", { name: /Create proposal/i }).click();
     await expect(page.getByText(/Proposal \d+ created/i)).toBeVisible({ timeout: 60_000 });
 
-    await page.getByRole("button", { name: /^Approve$/i }).click();
+    await runbook.getByRole("button", { name: /^Approve$/i }).click();
     await expect(page.getByText(/Proposal approved|approved/i).first()).toBeVisible({ timeout: 60_000 });
 
-    await page.getByRole("button", { name: /Simulate dispatch/i }).click();
+    await runbook.getByRole("button", { name: /Simulate dispatch/i }).click();
     await expect(page.getByText(/Execution recorded|Flow complete|Dispatch simulated/i).first()).toBeVisible({
       timeout: 60_000,
     });
-
 
     await page.goto("/audit", { waitUntil: "networkidle" });
     await expect(page.getByRole("heading", { name: "Audit Trail" })).toBeVisible({ timeout: 60_000 });

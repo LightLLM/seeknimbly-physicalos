@@ -81,7 +81,7 @@ export function DemoRunbook({ compact = false }: { compact?: boolean }) {
       break;
     case "audit":
       action = (
-        <Link href="/audit" className="inline-flex h-9 items-center gap-2 rounded-md bg-teal px-4 text-sm font-semibold text-[#041512] hover:bg-teal/85">
+        <Link href="/audit" className="inline-flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-fg hover:bg-primary/90">
           <ShieldCheck className="h-4 w-4" /> View audit trail
         </Link>
       );

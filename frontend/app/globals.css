@@ -3,30 +3,39 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* ------------------------------------------------------------------ */
-/* Seeknimbly PhysicalOS design tokens                                 */
+/* Seeknimbly PhysicalOS — Factory Operations design tokens            */
+/* Light SaaS console (mockup default) + dark industrial mode          */
 /* ------------------------------------------------------------------ */
 :root {
   color-scheme: light;
-  --app: #f3f6fa;
-  --sidebar: #e9eff6;
+  --app: #f5f7fb;
+  --sidebar: #0b1526;
+  --sidebar-fg: #f3f7fb;
+  --sidebar-muted: #8fa0b8;
+  --sidebar-active: #15233a;
   --surface: #ffffff;
-  --elevated: #f0f4f9;
-  --line: #d3dde8;
-  --fg: #0c1828;
-  --muted: #566a80;
+  --elevated: #f0f3f8;
+  --line: #e2e8f0;
+  --fg: #0f172a;
+  --muted: #64748b;
 
   --teal: #0e9f8e;
   --violet: #6d63e8;
-  --amber: #c98a1a;
-  --red: #d94848;
-  --green: #1f9e68;
-  --blue: #2f7fd8;
+  --amber: #d97706;
+  --red: #ef4444;
+  --green: #16a34a;
+  --blue: #0066ff;
+  --primary: #0066ff;
+  --primary-fg: #ffffff;
 }
 
 .dark {
   color-scheme: dark;
   --app: #080f1c;
   --sidebar: #0d1727;
+  --sidebar-fg: #f3f7fb;
+  --sidebar-muted: #9dafc2;
+  --sidebar-active: #17263a;
   --surface: #111e30;
   --elevated: #17263a;
   --line: #26384c;
@@ -39,11 +48,16 @@
   --red: #ef6464;
   --green: #39c78b;
   --blue: #63a9f8;
+  --primary: #19b7a5;
+  --primary-fg: #041512;
 }
 
 @theme inline {
   --color-app: var(--app);
   --color-sidebar: var(--sidebar);
+  --color-sidebar-fg: var(--sidebar-fg);
+  --color-sidebar-muted: var(--sidebar-muted);
+  --color-sidebar-active: var(--sidebar-active);
   --color-surface: var(--surface);
   --color-elevated: var(--elevated);
   --color-line: var(--line);
@@ -56,6 +70,8 @@
   --color-red: var(--red);
   --color-green: var(--green);
   --color-blue: var(--blue);
+  --color-primary: var(--primary);
+  --color-primary-fg: var(--primary-fg);
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
@@ -74,34 +90,44 @@ body {
 }
 
 ::selection {
-  background: color-mix(in srgb, var(--teal) 35%, transparent);
+  background: color-mix(in srgb, var(--blue) 35%, transparent);
 }
 
 :focus-visible {
-  outline: 2px solid var(--teal);
+  outline: 2px solid var(--blue);
   outline-offset: 2px;
   border-radius: 6px;
 }
 
-/* Slim industrial scrollbars */
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--line) transparent;
 }
 
-/* Subtle blueprint grid for canvases */
 .blueprint {
   background-image:
-    linear-gradient(to right, color-mix(in srgb, var(--line) 45%, transparent) 1px, transparent 1px),
-    linear-gradient(to bottom, color-mix(in srgb, var(--line) 45%, transparent) 1px, transparent 1px);
-  background-size: 32px 32px;
+    linear-gradient(to right, color-mix(in srgb, var(--line) 55%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--line) 55%, transparent) 1px, transparent 1px);
+  background-size: 28px 28px;
 }
 
-/* React Flow theming against our tokens */
+.factory-floor {
+  background:
+    radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--blue) 8%, transparent), transparent 50%),
+    linear-gradient(180deg, #eef2f7 0%, #e2e8f0 100%);
+  background-size: auto, auto;
+}
+
+.dark .factory-floor {
+  background:
+    radial-gradient(ellipse at 30% 20%, color-mix(in srgb, var(--teal) 12%, transparent), transparent 50%),
+    linear-gradient(180deg, #0d1727 0%, #080f1c 100%);
+}
+
 .react-flow {
   --xy-background-color: transparent;
   --xy-edge-stroke: var(--muted);
-  --xy-edge-stroke-selected: var(--teal);
+  --xy-edge-stroke-selected: var(--blue);
   --xy-controls-button-background-color: var(--surface);
   --xy-controls-button-background-color-hover: var(--elevated);
   --xy-controls-button-color: var(--fg);

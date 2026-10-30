@@ -14,7 +14,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   return (
     <div className="flex h-screen overflow-hidden">
-      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-teal focus:px-3 focus:py-1.5 focus:text-[#041512]">
+      <a href="#main" className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-50 focus:rounded-md focus:bg-primary focus:px-3 focus:py-1.5 focus:text-primary-fg">
         Skip to content
       </a>
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed(collapsed ? "0" : "1")} className="hidden lg:flex" />

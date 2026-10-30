@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { screen } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { Header } from "@/components/shell/header";
 import { Sidebar } from "@/components/shell/sidebar";
@@ -10,7 +10,9 @@ describe("App shell", () => {
     mockApi({ "/api/health": { status: "ok", ai_configured: true, model: "m" }, "/api/state": { ...STATE, nebius_status: undefined }, "/api/proposals": [] });
     renderWithProviders(<Header onOpenMobileNav={() => {}} />);
 
-    expect(screen.getByText("Demo Supervisor")).toBeInTheDocument();
+    expect(screen.getByText("Jessica Smith")).toBeInTheDocument();
+    expect(screen.getByText("Operations Supervisor")).toBeInTheDocument();
+    expect(screen.getByText("Factory Operations")).toBeInTheDocument();
     expect(screen.getByText("Simulation Mode")).toBeInTheDocument();
     const badge = await screen.findByText(/Configured · not verified/);
     expect(badge).toBeInTheDocument();
@@ -27,12 +29,28 @@ describe("App shell", () => {
     expect(search).toHaveValue("");
   });
 
-  it("renders every dashboard route in the sidebar", () => {
+  it("renders every dashboard route in the sidebar", async () => {
     mockApi({ "/api/proposals": [{ id: 1, order_id: "O1", worker_id: 1, robot_id: "R1", status: "pending" }] });
     renderWithProviders(<Sidebar collapsed={false} />);
-    for (const label of ["Command Center", "Factory Floor", "Work Orders", "Workforce", "Machines", "Robots", "Orchestration", "Approvals", "Executions", "Datasets", "Audit Trail", "Settings"]) {
-      expect(screen.getByRole("link", { name: new RegExp(label) })).toBeInTheDocument();
+    for (const label of [
+      "Dashboard",
+      "Factory Floor",
+      "Work Orders",
+      "Workforce",
+      "Machines",
+      "Robots & Machines",
+      "AI Assistant",
+      "Approvals",
+      "Schedule",
+      "Analytics",
+      "Audit Log",
+      "Settings",
+    ]) {
+      expect(screen.getByRole("link", { name: label })).toBeInTheDocument();
     }
-    expect(screen.getByRole("link", { name: "Command Center" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Dashboard" })).toHaveAttribute("aria-current", "page");
+    await waitFor(() => expect(screen.getByRole("link", { name: /Approvals/ })).toHaveTextContent("1"));
   });
 });
+
+

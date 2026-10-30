@@ -39,7 +39,7 @@ export function DataProviders({ client, children }: { client: QueryClient; child
 export function Providers({ children }: { children: React.ReactNode }) {
   const [client] = React.useState(makeQueryClient);
   return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} disableTransitionOnChange>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false} disableTransitionOnChange>
       <DataProviders client={client}>
         {children}
         <ThemedToaster />

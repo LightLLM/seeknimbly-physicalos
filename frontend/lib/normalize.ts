@@ -87,12 +87,53 @@ function kpiFromEntry(key: string, raw: unknown): KpiView {
 export function deriveKpis(state: FactoryState): KpiView[] {
   const availableWorkers = state.workers.filter((w) => w.available !== false).length;
   const availableRobots = state.robots.filter((r) => r.available !== false).length;
+  const inProgress = state.orders.filter((o) => /(progress|running|active|assigned)/i.test(String(o.status ?? ""))).length;
+  const completed = state.orders.filter((o) => /(complete|done|closed)/i.test(String(o.status ?? ""))).length;
   const atRisk = state.machines.filter((m) => /(fail|fault|warn|risk|degrad|down)/i.test(String(m.status ?? ""))).length;
+  const progressPct = state.orders.length ? Math.round(((completed + inProgress * 0.5) / state.orders.length) * 100) : 0;
+  const workerPct = state.workers.length ? Math.round((availableWorkers / state.workers.length) * 100) : 0;
+  const robotPct = state.robots.length ? Math.round((availableRobots / state.robots.length) * 100) : 0;
   return [
-    { key: "open_orders", label: "Open work orders", value: String(state.orders.length), derived: true },
-    { key: "workers", label: "Workers available", value: `${availableWorkers} / ${state.workers.length}`, derived: true },
-    { key: "robots", label: "Robots available", value: `${availableRobots} / ${state.robots.length}`, derived: true },
-    { key: "machines_at_risk", label: "Machines at risk", value: state.machines.length ? String(atRisk) : "—", derived: true },
+    {
+      key: "active_orders",
+      label: "Active Work Orders",
+      value: String(state.orders.length),
+      hint: inProgress ? `${inProgress} in progress` : "From factory state",
+      tone: "blue",
+      derived: true,
+    },
+    {
+      key: "workers",
+      label: "Available Workers",
+      value: `${availableWorkers} / ${state.workers.length}`,
+      hint: `${workerPct}% available`,
+      tone: "green",
+      derived: true,
+    },
+    {
+      key: "robots",
+      label: "Available Robots",
+      value: `${availableRobots} / ${state.robots.length}`,
+      hint: `${robotPct}% available`,
+      tone: "violet",
+      derived: true,
+    },
+    {
+      key: "production_progress",
+      label: "Production Progress",
+      value: `${progressPct}%`,
+      hint: completed ? `${completed} completed` : "Derived from order status",
+      tone: "blue",
+      derived: true,
+    },
+    {
+      key: "safety_status",
+      label: "Safety Status",
+      value: atRisk === 0 ? "All Clear" : `${atRisk} exception${atRisk === 1 ? "" : "s"}`,
+      hint: atRisk === 0 ? "No machine faults" : "Review machines at risk",
+      tone: atRisk === 0 ? "green" : "red",
+      derived: true,
+    },
   ];
 }
 

@@ -24,27 +24,31 @@ export function Sidebar({ collapsed, onToggle, onNavigate, className, mobile }: 
   return (
     <motion.aside
       initial={false}
-      animate={{ width: collapsed ? 68 : 248 }}
+      animate={{ width: collapsed ? 72 : 248 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
-      className={cn("flex h-full shrink-0 flex-col border-r border-line bg-sidebar", className)}
+      className={cn("flex h-full shrink-0 flex-col bg-sidebar text-sidebar-fg", className)}
       aria-label="Primary"
     >
-      <div className="flex h-14 items-center gap-2.5 border-b border-line px-4">
-        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-teal/15 text-teal">
+      <div className="flex h-16 items-center gap-2.5 px-4">
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-blue text-white shadow-md shadow-blue/30">
           <Hexagon className="h-5 w-5" />
         </span>
         {!collapsed ? (
           <div className="min-w-0 leading-tight">
-            <p className="truncate text-sm font-semibold tracking-tight">Seeknimbly</p>
-            <p className="truncate text-[11px] text-muted">PhysicalOS</p>
+            <p className="truncate text-[11px] font-medium uppercase tracking-[0.14em] text-sidebar-muted">Seeknimbly</p>
+            <p className="truncate text-sm font-semibold tracking-tight">PhysicalOS</p>
           </div>
         ) : null}
       </div>
 
-      <nav className="flex-1 space-y-4 overflow-y-auto px-2.5 py-4">
+      <nav className="flex-1 space-y-5 overflow-y-auto px-3 py-2">
         {NAV_GROUPS.map((group) => (
           <div key={group.title}>
-            {!collapsed ? <p className="mb-1 px-2 text-[10px] font-semibold uppercase tracking-widest text-muted/80">{group.title}</p> : <div className="mx-2 mb-1 border-t border-line/60" />}
+            {!collapsed ? (
+              <p className="mb-1.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-sidebar-muted/80">{group.title}</p>
+            ) : (
+              <div className="mx-2 mb-1 border-t border-white/10" />
+            )}
             <ul className="space-y-0.5">
               {group.items.map((item) => {
                 const active = isActive(pathname, item.href);
@@ -58,16 +62,21 @@ export function Sidebar({ collapsed, onToggle, onNavigate, className, mobile }: 
                       title={collapsed ? item.label : undefined}
                       aria-current={active ? "page" : undefined}
                       className={cn(
-                        "group relative flex h-9 items-center gap-3 rounded-md px-2.5 text-sm transition-colors",
-                        active ? "bg-elevated font-medium text-fg" : "text-muted hover:bg-elevated/60 hover:text-fg",
+                        "group relative flex h-10 items-center gap-3 rounded-xl px-3 text-sm transition-colors",
+                        active ? "bg-sidebar-active font-medium text-white" : "text-sidebar-muted hover:bg-white/5 hover:text-white",
                         collapsed && "justify-center px-0",
                       )}
                     >
-                      {active ? <span className="absolute inset-y-1.5 left-0 w-0.5 rounded-full bg-teal" aria-hidden /> : null}
-                      <Icon className={cn("h-4 w-4 shrink-0", active && "text-teal")} aria-hidden />
+                      {active ? <span className="absolute inset-y-2 left-0 w-1 rounded-full bg-blue" aria-hidden /> : null}
+                      <Icon className={cn("h-4 w-4 shrink-0", active && "text-blue")} aria-hidden />
                       {!collapsed ? <span className="truncate">{item.label}</span> : <span className="sr-only">{item.label}</span>}
                       {showBadge ? (
-                        <span className={cn("mono rounded-full bg-amber/20 px-1.5 text-[10px] font-semibold text-amber", collapsed ? "absolute right-1 top-1" : "ml-auto")}>
+                        <span
+                          className={cn(
+                            "mono rounded-full bg-red px-1.5 text-[10px] font-semibold text-white",
+                            collapsed ? "absolute right-1 top-1" : "ml-auto",
+                          )}
+                        >
                           {pending}
                         </span>
                       ) : null}
@@ -85,7 +94,7 @@ export function Sidebar({ collapsed, onToggle, onNavigate, className, mobile }: 
           type="button"
           onClick={onToggle}
           aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="flex h-11 items-center gap-2 border-t border-line px-5 text-xs text-muted hover:text-fg"
+          className="flex h-12 items-center gap-2 border-t border-white/10 px-5 text-xs text-sidebar-muted hover:text-white"
         >
           {collapsed ? <PanelLeftOpen className="h-4 w-4" /> : <PanelLeftClose className="h-4 w-4" />}
           {!collapsed ? "Collapse" : null}

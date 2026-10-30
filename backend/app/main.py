@@ -227,8 +227,17 @@ def recommend(order_id: str) -> dict:
 
 @app.get("/api/inference/test")
 def inference_test() -> dict:
+    # Credentials first so a post-dispatch factory state cannot mask a missing Nebius key as 409.
+    if not settings.ai_configured:
+        raise HTTPException(status_code=503, detail="Set NEBIUS_API_KEY and NEBIUS_MODEL")
     with _lock:
-        order, worker, machine, robot, _evidence = compute_eligible_assignment(_store, "O1")
+        try:
+            order, worker, machine, robot, _evidence = compute_eligible_assignment(_store, "O1")
+        except HTTPException:
+            order = next(item for item in _store["orders"] if item["id"] == "O1")
+            worker = next(item for item in _store["workers"] if item["id"] == 1)
+            machine = next(item for item in _store["machines"] if item["id"] == "M-CNC-02")
+            robot = next(item for item in _store["robots"] if item["id"] == "R1")
         result = nebius.test_inference(order, worker, machine, robot)
         _store["inference_verified"] = True
         with connect() as connection:

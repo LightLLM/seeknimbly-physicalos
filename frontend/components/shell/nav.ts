@@ -20,11 +20,12 @@ export interface NavItem {
   icon: LucideIcon;
 }
 
+/** Flat enterprise nav aligned with the Factory Operations console. */
 export const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
   {
     title: "Operate",
     items: [
-      { href: "/", label: "Command Center", icon: LayoutDashboard },
+      { href: "/", label: "Dashboard", icon: LayoutDashboard },
       { href: "/factory", label: "Factory Floor", icon: Factory },
       { href: "/work-orders", label: "Work Orders", icon: ClipboardList },
     ],
@@ -34,25 +35,25 @@ export const NAV_GROUPS: { title: string; items: NavItem[] }[] = [
     items: [
       { href: "/workforce", label: "Workforce", icon: Users },
       { href: "/machines", label: "Machines", icon: Cog },
-      { href: "/robots", label: "Robots", icon: Bot },
+      { href: "/robots", label: "Robots & Machines", icon: Bot },
     ],
   },
   {
     title: "Automation",
     items: [
-      { href: "/orchestration", label: "Orchestration", icon: Workflow },
+      { href: "/orchestration", label: "AI Assistant", icon: Workflow },
       { href: "/approvals", label: "Approvals", icon: ShieldCheck },
-      { href: "/executions", label: "Executions", icon: PlayCircle },
+      { href: "/executions", label: "Schedule", icon: PlayCircle },
     ],
   },
   {
-    title: "Data & Governance",
+    title: "Governance",
     items: [
-      { href: "/datasets", label: "Datasets", icon: Database },
-      { href: "/audit", label: "Audit Trail", icon: ScrollText },
+      { href: "/datasets", label: "Analytics", icon: Database },
+      { href: "/audit", label: "Audit Log", icon: ScrollText },
+      { href: "/settings", label: "Settings", icon: Settings },
     ],
   },
-  { title: "System", items: [{ href: "/settings", label: "Settings", icon: Settings }] },
 ];
 
 export const ALL_NAV = NAV_GROUPS.flatMap((g) => g.items);

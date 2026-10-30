@@ -3,30 +3,30 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
-import { ChevronRight, MapPin, Menu, Moon, Search, ShieldAlert, Sun, UserCircle2, X } from "lucide-react";
+import { Bell, MapPin, Menu, Moon, Search, ShieldAlert, Sun, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ApiError } from "@/lib/api/client";
-import { useFactoryState, useHealth } from "@/lib/api/hooks";
+import { useFactoryState, useHealth, useProposals } from "@/lib/api/hooks";
 import { APP_ENV, FACILITIES, FACILITY_STORAGE_KEY } from "@/lib/config";
 import { resolveNebius } from "@/lib/normalize";
 import { useLocalStorage } from "@/lib/use-local-storage";
 import { ALL_NAV } from "./nav";
 import { useSearch } from "./search-context";
 
-function Breadcrumbs() {
+function PageIntro() {
   const pathname = usePathname();
   const current = ALL_NAV.find((n) => (n.href === "/" ? pathname === "/" : pathname.startsWith(n.href)));
+  const isHome = pathname === "/";
   return (
-    <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-sm">
-      <Link href="/" className="text-muted hover:text-fg">
-        PhysicalOS
-      </Link>
-      <ChevronRight className="h-3.5 w-3.5 text-muted/70" aria-hidden />
-      <span className="font-medium" aria-current="page">
-        {current?.label ?? "Console"}
-      </span>
-    </nav>
+    <div className="min-w-0">
+      <h1 className="truncate text-lg font-semibold tracking-tight md:text-xl">
+        {isHome ? "Factory Operations" : (current?.label ?? "Console")}
+      </h1>
+      <p className="truncate text-xs text-muted">
+        {isHome ? "Human + AI + Robots. A safer, smarter, more productive factory." : "Seeknimbly PhysicalOS · simulation mode"}
+      </p>
+    </div>
   );
 }
 
@@ -49,7 +49,7 @@ function FacilitySelect() {
       <select
         value={facility}
         onChange={(e) => setFacility(e.target.value)}
-        className="h-8 rounded-md border border-line bg-elevated pl-8 pr-6 text-xs focus:border-teal"
+        className="h-9 rounded-xl border border-line bg-surface pl-8 pr-6 text-xs shadow-sm focus:border-blue"
       >
         {FACILITIES.map((f) => (
           <option key={f.id} value={f.id}>
@@ -65,17 +65,17 @@ function SearchBox() {
   const { query, setQuery } = useSearch();
   return (
     <div className="relative w-full max-w-sm">
-      <Search className="pointer-events-none absolute left-2.5 top-2 h-4 w-4 text-muted" aria-hidden />
+      <Search className="pointer-events-none absolute left-3 top-2.5 h-4 w-4 text-muted" aria-hidden />
       <input
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Filter tables on this page…"
+        placeholder="Search work orders, workers, robots…"
         aria-label="Filter tables"
-        className="h-8 w-full rounded-md border border-line bg-elevated pl-8 pr-8 text-xs placeholder:text-muted/70 focus:border-teal"
+        className="h-9 w-full rounded-xl border border-line bg-surface pl-9 pr-8 text-xs shadow-sm placeholder:text-muted/70 focus:border-blue"
       />
       {query ? (
-        <button type="button" onClick={() => setQuery("")} aria-label="Clear filter" className="absolute right-2 top-2 text-muted hover:text-fg">
+        <button type="button" onClick={() => setQuery("")} aria-label="Clear filter" className="absolute right-2 top-2.5 text-muted hover:text-fg">
           <X className="h-4 w-4" />
         </button>
       ) : null}
@@ -110,25 +110,41 @@ export function StatusCluster() {
   );
 }
 
+function Notifications() {
+  const proposals = useProposals();
+  const pending = proposals.data?.filter((p) => p.status.toLowerCase() === "pending").length ?? 0;
+  return (
+    <Link
+      href="/approvals"
+      aria-label={pending ? `${pending} pending approvals` : "Notifications"}
+      className="relative inline-flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface text-muted shadow-sm hover:text-fg"
+    >
+      <Bell className="h-4 w-4" />
+      {pending > 0 ? <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-red" /> : null}
+    </Link>
+  );
+}
+
 export function Header({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   return (
-    <header className="sticky top-0 z-30 flex min-h-14 flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-app/85 px-4 py-2 backdrop-blur">
+    <header className="sticky top-0 z-30 flex min-h-16 flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-surface/90 px-4 py-3 backdrop-blur md:px-6">
       <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open navigation" onClick={onOpenMobileNav}>
         <Menu className="h-5 w-5" />
       </Button>
-      <Breadcrumbs />
+      <PageIntro />
       <div className="order-last flex w-full justify-center md:order-none md:w-auto md:flex-1">
         <SearchBox />
       </div>
-      <div className="ml-auto flex items-center gap-3">
+      <div className="ml-auto flex items-center gap-2.5">
         <FacilitySelect />
         <StatusCluster />
+        <Notifications />
         <ThemeToggle />
-        <div className="hidden items-center gap-2 border-l border-line pl-3 lg:flex">
-          <UserCircle2 className="h-6 w-6 text-muted" aria-hidden />
+        <div className="hidden items-center gap-2.5 border-l border-line pl-3 lg:flex">
+          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue/10 text-xs font-semibold text-blue">JS</span>
           <div className="leading-tight">
-            <p className="text-xs font-medium">Demo Supervisor</p>
-            <p className="text-[10px] text-muted">Supervisor role</p>
+            <p className="text-xs font-semibold">Jessica Smith</p>
+            <p className="text-[10px] text-muted">Operations Supervisor</p>
           </div>
         </div>
       </div>
