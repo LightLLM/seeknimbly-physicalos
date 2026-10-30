@@ -1,0 +1,140 @@
+from __future__ import annotations
+
+from copy import deepcopy
+from datetime import datetime, timedelta, timezone
+
+
+def _utc(hours: int = 0) -> str:
+    return (datetime.now(timezone.utc) + timedelta(hours=hours)).isoformat()
+
+
+def seed_factory() -> dict:
+    """Deterministic synthetic factory used for the hackathon demo."""
+    workers = [
+        {"id": 1, "name": "Amina", "skills": ["CNC", "inspection"], "certifications": ["CNC-L2", "ISO-9001"], "available": True, "shift": "A", "assigned_tasks": []},
+        {"id": 2, "name": "Mateo", "skills": ["welding"], "certifications": ["WELD-L2"], "available": True, "shift": "A", "assigned_tasks": []},
+        {"id": 3, "name": "Priya", "skills": ["assembly", "inspection"], "certifications": ["ASM-L1", "QA-L1"], "available": False, "shift": "B", "assigned_tasks": ["O3"]},
+        {"id": 4, "name": "Jonas", "skills": ["CNC"], "certifications": ["CNC-L1"], "available": True, "shift": "A", "assigned_tasks": []},
+        {"id": 5, "name": "Elena", "skills": ["assembly"], "certifications": ["ASM-L2"], "available": True, "shift": "B", "assigned_tasks": []},
+        {"id": 6, "name": "Sam", "skills": ["welding", "inspection"], "certifications": ["WELD-L1", "QA-L1"], "available": True, "shift": "A", "assigned_tasks": []},
+        {"id": 7, "name": "Noor", "skills": ["packaging"], "certifications": ["PACK-L1"], "available": True, "shift": "B", "assigned_tasks": []},
+        {"id": 8, "name": "Luis", "skills": ["maintenance"], "certifications": ["MAINT-L2"], "available": True, "shift": "A", "assigned_tasks": []},
+    ]
+    machines = [
+        {"id": "M-CNC-01", "name": "CNC Station Alpha", "type": "CNC", "capabilities": ["CNC"], "status": "running", "line": "Line-1", "health_score": 92, "assigned_order_id": "O1"},
+        {"id": "M-CNC-02", "name": "CNC Station Beta", "type": "CNC", "capabilities": ["CNC"], "status": "available", "line": "Line-1", "health_score": 97, "assigned_order_id": None},
+        {"id": "M-WELD-01", "name": "Welding Cell 1", "type": "welding", "capabilities": ["welding"], "status": "available", "line": "Line-2", "health_score": 95, "assigned_order_id": None},
+        {"id": "M-ASM-01", "name": "Assembly Bay 1", "type": "assembly", "capabilities": ["assembly"], "status": "available", "line": "Line-3", "health_score": 98, "assigned_order_id": None},
+        {"id": "M-INSP-01", "name": "Inspection Station", "type": "inspection", "capabilities": ["inspection"], "status": "available", "line": "Line-3", "health_score": 99, "assigned_order_id": None},
+        {"id": "M-PACK-01", "name": "Packaging Cell", "type": "packaging", "capabilities": ["packaging"], "status": "idle", "line": "Line-4", "health_score": 96, "assigned_order_id": None},
+    ]
+    robots = [
+        {"id": "R1", "type": "material", "name": "MH-Scout", "capabilities": ["material"], "available": True, "status": "available", "assigned_tasks": []},
+        {"id": "R2", "type": "welding", "name": "Weld-Arm", "capabilities": ["welding"], "available": True, "status": "available", "assigned_tasks": []},
+        {"id": "R3", "type": "inspection", "name": "Vision-Bot", "capabilities": ["inspection"], "available": True, "status": "available", "assigned_tasks": []},
+    ]
+    orders = [
+        {
+            "id": "O1",
+            "task": "CNC housing",
+            "product": "Servo housing",
+            "quantity": 40,
+            "skill": "CNC",
+            "required_skills": ["CNC"],
+            "required_certifications": ["CNC-L1"],
+            "required_machine_capabilities": ["CNC"],
+            "optional_robot_capabilities": ["material"],
+            "robot_type": "material",
+            "preferred_machine_id": "M-CNC-01",
+            "dependencies": [],
+            "priority": 1,
+            "deadline": _utc(8),
+            "status": "active",
+            "machine_id": "M-CNC-01",
+        },
+        {
+            "id": "O2",
+            "task": "Weld frame",
+            "product": "Chassis frame",
+            "quantity": 12,
+            "skill": "welding",
+            "required_skills": ["welding"],
+            "required_certifications": ["WELD-L1"],
+            "required_machine_capabilities": ["welding"],
+            "optional_robot_capabilities": ["welding"],
+            "robot_type": "welding",
+            "preferred_machine_id": "M-WELD-01",
+            "dependencies": [],
+            "priority": 2,
+            "deadline": _utc(12),
+            "status": "queued",
+            "machine_id": None,
+        },
+        {
+            "id": "O3",
+            "task": "Assemble actuator",
+            "product": "Linear actuator",
+            "quantity": 20,
+            "skill": "assembly",
+            "required_skills": ["assembly"],
+            "required_certifications": ["ASM-L1"],
+            "required_machine_capabilities": ["assembly"],
+            "optional_robot_capabilities": ["material"],
+            "robot_type": "material",
+            "preferred_machine_id": "M-ASM-01",
+            "dependencies": ["O1"],
+            "priority": 3,
+            "deadline": _utc(24),
+            "status": "blocked",
+            "machine_id": None,
+        },
+        {
+            "id": "O4",
+            "task": "Final inspection",
+            "product": "Assembled unit",
+            "quantity": 20,
+            "skill": "inspection",
+            "required_skills": ["inspection"],
+            "required_certifications": ["QA-L1"],
+            "required_machine_capabilities": ["inspection"],
+            "optional_robot_capabilities": ["inspection"],
+            "robot_type": "inspection",
+            "preferred_machine_id": "M-INSP-01",
+            "dependencies": ["O3"],
+            "priority": 2,
+            "deadline": _utc(30),
+            "status": "queued",
+            "machine_id": None,
+        },
+        {
+            "id": "O5",
+            "task": "Package shipment",
+            "product": "Finished goods",
+            "quantity": 20,
+            "skill": "packaging",
+            "required_skills": ["packaging"],
+            "required_certifications": ["PACK-L1"],
+            "required_machine_capabilities": ["packaging"],
+            "optional_robot_capabilities": ["material"],
+            "robot_type": "material",
+            "preferred_machine_id": "M-PACK-01",
+            "dependencies": ["O4"],
+            "priority": 4,
+            "deadline": _utc(36),
+            "status": "queued",
+            "machine_id": None,
+        },
+    ]
+    return {
+        "workers": deepcopy(workers),
+        "machines": deepcopy(machines),
+        "robots": deepcopy(robots),
+        "orders": deepcopy(orders),
+        "events": [],
+        "workflows": [],
+        "executions": [],
+        "bookings": {"workers": {}, "robots": {}, "machines": {}},
+        "datasets": [],
+        "inference_verified": False,
+        "completed_simulated_tasks": 0,
+    }

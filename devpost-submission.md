@@ -1,47 +1,55 @@
 # Seeknimbly PhysicalOS — Devpost draft
 
-**Tagline:** Human-approved manufacturing dispatch for workers and simulated robots, with deterministic safety checks and Nebius-hosted NVIDIA explanations.
+**Tagline:** One operating system for humans, AI agents, and machines.
 
 ## Inspiration
 
-Factories frequently coordinate workforce availability, qualifications, production orders, and machine capacity across disconnected spreadsheets. A supervisor needs a safe, auditable answer when an urgent order arrives and the planned worker is unavailable.
+Factories coordinate qualifications, machine health, and dispatch across disconnected systems. When a cell fails, supervisors need a safe, explainable, auditable recovery path—not an autonomous model that can invent eligibility or command equipment.
 
 ## What it does
 
-PhysicalOS evaluates synthetic work orders against worker availability and skills, selects a compatible simulated robot, and proposes an eligible assignment. A supervisor must approve or reject the proposal, and every action is recorded. An NVIDIA open-source model hosted by Nebius Token Factory can explain the already-validated recommendation; it cannot override the deterministic checks.
+PhysicalOS replays a public AI4I machine-health failure, marks the affected synthetic CNC unavailable, computes an eligible alternate assignment with deterministic safety rules, optionally asks Nebius-hosted NVIDIA Nemotron for a one-sentence explanation, requires a human supervisor decision, runs a simulated dispatch, and records an append-only audit trail.
 
 ## How we built it
 
-FastAPI serves a lightweight HTML/JavaScript dashboard and API. SQLite stores demo proposals and audit events. The safety-critical eligibility engine is deterministic. The Nebius adapter calls the OpenAI-compatible Token Factory chat-completions endpoint using a model chosen from the authenticated model catalog and returns the model and inference request provenance.
+- FastAPI orchestration backend (safety engine, workflow state machine, SQLite audit, simulated adapters)
+- Next.js enterprise console (Command Center, orchestration, approvals, datasets, executions, audit)
+- UCI AI4I 2020 (CC BY 4.0) as the open industrial event source
+- Nebius Token Factory OpenAI-compatible adapter for `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`
 
-## Challenges and learning
+## Challenges we ran into
 
-The main design challenge was preserving a strict boundary between probabilistic explanation and deterministic operational eligibility. Human approval and visible provenance made the workflow safer and easier to audit.
+Preserving a hard boundary between probabilistic explanation and deterministic eligibility; keeping dataset provenance honest when mapping public UDIs onto simulated plant IDs; delivering a complete demo without physical robot control.
 
-## Significant updates after August 26, 2026
+## Accomplishments that we're proud of
 
-We turned an earlier synthetic-factory concept into a standalone, deployable workflow; added qualification and compatibility checks, supervisor approval, audit logging, tests, Vercel packaging, and the Nebius Token Factory adapter.
+A working end-to-end recovery demo, enterprise UI, documented dataset provenance, automated backend tests, and an inference path that fails closed or falls back to clearly labeled rules—never fake AI success.
 
-## Links — pending final verification
+## What we learned
 
-- Demo: https://seeknimbly-physicalos.vercel.app
+Industrial AI demos are strongest when the model is downstream of safety and upstream of human approval.
+
+## What's next
+
+Durable PostgreSQL state, richer multi-supervisor auth, and future-facing ROS 2 / Open-RMF adapters that remain simulation-gated until real integrations are tested.
+
+## Built with
+
+FastAPI, Pydantic, SQLite, Next.js, React, TypeScript, Tailwind CSS, TanStack Query, React Flow, Recharts, Nebius Token Factory, NVIDIA Nemotron, UCI AI4I 2020
+
+## Try it out
+
 - Repository: **PENDING PUBLICATION**
+- Live demo: **PENDING APPROVED DEPLOY**
 - Video: **PENDING PUBLIC YOUTUBE UPLOAD**
 
-## Required truth checks before submission
+## Truth checks before submission
 
-- [ ] `/api/inference/test` succeeds with a real Nebius key and eligible NVIDIA model.
-- [ ] Dashboard recommendation reports `source: nebius_token_factory`.
-- [ ] Exact model ID, quality, latency, and platform feedback recorded from the real run.
-- [ ] Public GitHub repository contains MIT license and setup instructions.
-- [ ] Public YouTube video is under three minutes.
-- [ ] All required Devpost form answers reviewed by the entrant.
+- [ ] `/api/inference/test` succeeds with a real Nebius key (if claiming AI evidence)
+- [ ] Dashboard shows `source: nebius_token_factory` only after a real call
+- [ ] Public GitHub + MIT LICENSE
+- [ ] YouTube video under three minutes
+- [ ] Official hackathon rules/eligibility/deadline confirmed
+- [ ] Explicit entrant approval to submit
 
-## Draft form answers that require entrant input
-
-- Submitter type and organization name.
-- Country of residence and Canadian province if applicable.
-- Age-majority and employee-status confirmations.
-- First-hand Nemotron scores, comparisons, and Nebius feedback after the live run.
-
-Recommended track: **Best apps and agents**. Tavily: **No**, unless a real runtime Tavily integration is added and demonstrated.
+Recommended track: **Best apps and agents**.

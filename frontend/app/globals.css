@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ------------------------------------------------------------------ */
+/* Seeknimbly PhysicalOS design tokens                                 */
+/* ------------------------------------------------------------------ */
+:root {
+  color-scheme: light;
+  --app: #f3f6fa;
+  --sidebar: #e9eff6;
+  --surface: #ffffff;
+  --elevated: #f0f4f9;
+  --line: #d3dde8;
+  --fg: #0c1828;
+  --muted: #566a80;
+
+  --teal: #0e9f8e;
+  --violet: #6d63e8;
+  --amber: #c98a1a;
+  --red: #d94848;
+  --green: #1f9e68;
+  --blue: #2f7fd8;
+}
+
+.dark {
+  color-scheme: dark;
+  --app: #080f1c;
+  --sidebar: #0d1727;
+  --surface: #111e30;
+  --elevated: #17263a;
+  --line: #26384c;
+  --fg: #f3f7fb;
+  --muted: #9dafc2;
+
+  --teal: #19b7a5;
+  --violet: #8b82f6;
+  --amber: #f0b34b;
+  --red: #ef6464;
+  --green: #39c78b;
+  --blue: #63a9f8;
+}
+
+@theme inline {
+  --color-app: var(--app);
+  --color-sidebar: var(--sidebar);
+  --color-surface: var(--surface);
+  --color-elevated: var(--elevated);
+  --color-line: var(--line);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+
+  --color-teal: var(--teal);
+  --color-violet: var(--violet);
+  --color-amber: var(--amber);
+  --color-red: var(--red);
+  --color-green: var(--green);
+  --color-blue: var(--blue);
+
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, monospace;
+}
+
+html,
+body {
+  background: var(--app);
+  color: var(--fg);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--teal) 35%, transparent);
+}
+
+:focus-visible {
+  outline: 2px solid var(--teal);
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+/* Slim industrial scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
+}
+
+/* Subtle blueprint grid for canvases */
+.blueprint {
+  background-image:
+    linear-gradient(to right, color-mix(in srgb, var(--line) 45%, transparent) 1px, transparent 1px),
+    linear-gradient(to bottom, color-mix(in srgb, var(--line) 45%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* React Flow theming against our tokens */
+.react-flow {
+  --xy-background-color: transparent;
+  --xy-edge-stroke: var(--muted);
+  --xy-edge-stroke-selected: var(--teal);
+  --xy-controls-button-background-color: var(--surface);
+  --xy-controls-button-background-color-hover: var(--elevated);
+  --xy-controls-button-color: var(--fg);
+  --xy-controls-button-border-color: var(--line);
+  --xy-minimap-background-color: var(--surface);
+  --xy-attribution-background-color: transparent;
+}
+.react-flow__attribution {
+  display: none;
+}
+.react-flow__handle {
+  background: var(--line);
+  border: 1px solid var(--muted);
+  width: 8px;
+  height: 8px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes pulse-ring {
+  0% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--amber) 55%, transparent);
+  }
+  100% {
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+.pulse-ring {
+  animation: pulse-ring 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-ring {
+    animation: none;
+  }
+}
