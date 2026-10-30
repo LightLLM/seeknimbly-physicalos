@@ -17,6 +17,15 @@ app = FastAPI(title="Seeknimbly PhysicalOS", version="1.0.0")
 _lock = Lock()
 _db_path = Path(os.getenv("PHYSICALOS_DB", "/tmp/physicalos.db" if os.getenv("VERCEL") else "physicalos.db"))
 
+
+@app.middleware("http")
+async def preserve_rewritten_path(request, call_next):
+    """Undo Vercel's internal function prefix while retaining the requested route."""
+    prefix = "/api/index"
+    if request.scope["path"].startswith(prefix):
+        request.scope["path"] = request.scope["path"][len(prefix):] or "/"
+    return await call_next(request)
+
 WORKERS = [
     {"id": 1, "name": "Amina", "skills": ["CNC", "inspection"], "available": True},
     {"id": 2, "name": "Mateo", "skills": ["welding"], "available": True},
