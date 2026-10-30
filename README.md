@@ -4,7 +4,34 @@ Human-approved manufacturing dispatch for workers, work orders, and simulated ro
 
 ![PhysicalOS dashboard](assets/dashboard.png)
 
-> Hackathon status: the rules-based workflow is verified locally and on Vercel. The Nebius/NVIDIA call must be configured and evidenced before claiming hackathon eligibility.
+> Hackathon status: the workflow is verified locally and on Vercel. Production inference was verified on October 30, 2026 through Nebius Token Factory using `nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`.
+
+## Workflow and data flow
+
+```mermaid
+flowchart LR
+    U["Supervisor<br/>Web dashboard"]
+    V["Vercel<br/>FastAPI application"]
+    S["Deterministic safety gate<br/>availability + skills + robot compatibility"]
+    N["Nebius Token Factory<br/>OpenAI-compatible API"]
+    M["NVIDIA Nemotron 3 Nano 30B A3B<br/>nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B"]
+    Q["Human approval queue"]
+    A["SQLite audit trail<br/>ephemeral on Vercel"]
+
+    U -->|"Select work order"| V
+    V -->|"Synthetic order, worker, and robot IDs"| S
+    S -->|"Rejected: no safe assignment"| U
+    S -->|"Validated assignment only"| N
+    N -->|"Inference request"| M
+    M -->|"One-sentence rationale"| N
+    N -->|"Rationale + model + request ID"| V
+    V -->|"Proposal"| Q
+    Q -->|"Approve or reject"| V
+    V -->|"Decision event"| A
+    V -->|"Updated status"| U
+```
+
+The model is downstream of the deterministic safety gate: it explains an assignment that the application has already validated. It cannot change worker eligibility, bypass compatibility checks, approve its own proposal, or control physical machinery. The live verification endpoint is [`/api/inference/test`](https://seeknimbly-physicalos.vercel.app/api/inference/test).
 
 ## What it demonstrates
 
@@ -28,10 +55,11 @@ Open `http://127.0.0.1:8000`. Run tests with `.venv/Scripts/pytest -q`.
 
 1. Copy `.env.example` to `.env`.
 2. Set `NEBIUS_API_KEY` to a Token Factory key.
-3. Set `NEBIUS_MODEL` to an eligible NVIDIA open-source model ID returned by your account's `GET /v1/models` catalog. Do not guess the ID.
-4. Start the app with those variables loaded.
-5. Open `/api/inference/test`. A qualifying check returns `verified: true`, the exact model, provider, rationale, and inference request ID when supplied by Token Factory.
-6. Confirm `/api/recommend/O1` reports `source: nebius_token_factory`.
+3. Set `NEBIUS_MODEL=nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B`, the NVIDIA model verified for this deployment.
+4. Set `NEBIUS_BASE_URL=https://api.tokenfactory.us-central1.nebius.com/v1`.
+5. Start the app with those variables loaded.
+6. Open `/api/inference/test`. A qualifying check returns `verified: true`, the exact model, provider, rationale, and inference request ID supplied by Token Factory.
+7. Confirm `/api/recommend/O1` reports `source: nebius_token_factory`.
 
 `PHYSICALOS_REQUIRE_AI=true` makes recommendation calls fail closed if inference fails. Without it, the demo remains usable in clearly labeled rules mode.
 
@@ -61,8 +89,8 @@ The project extends an earlier synthetic factory concept. During the submission 
 - All factory data and robots are simulated.
 - No PLC, machine, payroll, or employment system is controlled.
 - The current Vercel persistence layer is ephemeral.
-- Passing tests do not prove a Nebius inference call; only `/api/inference/test` evidence does.
-- Do not describe the NVIDIA integration as verified until that endpoint succeeds with real credentials.
+- Passing tests alone do not prove a Nebius inference call; the live `/api/inference/test` response provides that evidence.
+- The verified integration generates dispatch explanations only; it does not perform safety decisions or robot control.
 
 MIT licensed. See [LICENSE](LICENSE).
 
