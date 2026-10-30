@@ -5,6 +5,27 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
+
+
+def _load_dotenv(path: Path) -> None:
+    """Load KEY=VALUE pairs from a local .env without overriding existing process env."""
+    if not path.is_file():
+        return
+    try:
+        for raw in path.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            key = key.strip()
+            if not key or key in os.environ:
+                continue
+            os.environ[key] = value.strip().strip('"').strip("'")
+    except OSError:
+        return
+
+
+_load_dotenv(ROOT / ".env")
 DATA_RAW = ROOT / "data" / "raw"
 DATA_PROCESSED = ROOT / "data" / "processed"
 DATASET_PATH = DATA_RAW / "ai4i2020.csv"
@@ -84,11 +105,13 @@ def nebius_base_url() -> str:
 
 
 def max_output_tokens() -> int:
+    # Nemotron Nano spends part of the budget on hidden reasoning tokens; 100 often
+    # exhausts before any assistant content is emitted. Default high enough for one sentence.
     try:
-        value = int(os.getenv("NEBIUS_MAX_OUTPUT_TOKENS", "100"))
+        value = int(os.getenv("NEBIUS_MAX_OUTPUT_TOKENS", "256"))
     except ValueError:
-        return 100
-    return max(1, min(value, 100))
+        return 256
+    return max(1, min(value, 512))
 
 
 def app_env() -> str:

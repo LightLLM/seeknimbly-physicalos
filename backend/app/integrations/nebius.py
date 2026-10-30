@@ -12,6 +12,32 @@ from backend.app.core.config import settings
 logger = logging.getLogger("physicalos.nebius")
 
 
+def _message_text(message: dict[str, Any]) -> str | None:
+    """Extract visible assistant text from an OpenAI-compatible chat message."""
+    content = message.get("content")
+    if isinstance(content, str) and content.strip():
+        return content.strip()
+    if isinstance(content, list):
+        parts: list[str] = []
+        for item in content:
+            if isinstance(item, str) and item.strip():
+                parts.append(item.strip())
+            elif isinstance(item, dict):
+                text = item.get("text")
+                if isinstance(text, str) and text.strip():
+                    parts.append(text.strip())
+        if parts:
+            return " ".join(parts)
+    for key in ("reasoning_content", "reasoning"):
+        alt = message.get(key)
+        if isinstance(alt, str) and alt.strip():
+            # Last non-empty line is usually the closest thing to a final answer.
+            lines = [line.strip() for line in alt.splitlines() if line.strip()]
+            if lines:
+                return lines[-1]
+    return None
+
+
 def explain_assignment(order: dict, worker: dict, machine: dict, robot: dict, *, fail_closed: bool | None = None) -> dict | None:
     """Call Nebius Token Factory for a one-sentence explanation of a validated assignment.
 
@@ -43,7 +69,8 @@ def explain_assignment(order: dict, worker: dict, machine: dict, robot: dict, *,
                 "role": "system",
                 "content": (
                     "You are an auditable factory dispatch explainer. "
-                    "Deterministic safety checks always prevail. Human supervisors authorize execution."
+                    "Deterministic safety checks always prevail. Human supervisors authorize execution. "
+                    "Respond with exactly one concise explanation sentence and no preamble."
                 ),
             },
             {"role": "user", "content": prompt},
@@ -55,12 +82,24 @@ def explain_assignment(order: dict, worker: dict, machine: dict, robot: dict, *,
     headers = {"Authorization": f"Bearer {settings.nebius_api_key}", "Content-Type": "application/json"}
 
     try:
-        with httpx.Client(timeout=30.0) as client:
+        with httpx.Client(timeout=60.0) as client:
             response = client.post(url, headers=headers, json=payload)
         if response.status_code >= 400:
             raise HTTPException(status_code=502, detail=f"Nebius inference HTTP {response.status_code}")
         result: dict[str, Any] = response.json()
-        text = result["choices"][0]["message"]["content"].strip()
+        choice = (result.get("choices") or [None])[0]
+        if not isinstance(choice, dict):
+            raise KeyError("choices")
+        message = choice.get("message") or {}
+        if not isinstance(message, dict):
+            raise KeyError("message")
+        text = _message_text(message)
+        if not text:
+            finish = choice.get("finish_reason")
+            raise HTTPException(
+                status_code=502,
+                detail=f"Nebius returned empty explanation (finish_reason={finish})",
+            )
         request_id = result.get("id")
         return {
             "source": "nebius_token_factory",
@@ -75,7 +114,7 @@ def explain_assignment(order: dict, worker: dict, machine: dict, robot: dict, *,
             raise
         logger.warning("Nebius inference failed; falling back to rules mode")
         return None
-    except (httpx.HTTPError, KeyError, IndexError, TypeError, json.JSONDecodeError) as exc:
+    except (httpx.HTTPError, KeyError, IndexError, TypeError, json.JSONDecodeError, AttributeError) as exc:
         if closed:
             raise HTTPException(status_code=502, detail=f"Nebius inference failed: {type(exc).__name__}") from exc
         logger.warning("Nebius inference error %s; rules fallback", type(exc).__name__)
